@@ -6,10 +6,6 @@ const props = defineProps<{
     movie: Movie;
 }>();
 
-const openDetailView = () => {
-    emit('view', props.movie);
-};
-
 const openModifyForm = () => {
     emit('modify', props.movie);
 };
@@ -23,7 +19,6 @@ const duplicateMovie = () => {
 };
 
 const emit = defineEmits<{
-    (event: 'view', movie: Movie): void
     (event: 'modify', movie: Movie): void
     (event: 'delete', movie: Movie): void
     (event: 'duplicate', movie: Movie): void
@@ -33,39 +28,47 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <div class="card h-100 border-dark">
-        <div class="card-body d-flex flex-column">
-            <img v-bind:src="movie.imageUrl" alt="Poster du film " class="card-img-top">
-            <h5 class="card-title">{{ movie.name }}</h5>
-            <p class="card-text">{{ movie.description }}</p>
-            <p class="card-text"><small class="text-muted">{{ movie.category }}</small></p>
-            <p class="card-text">
-                <span :class="{'text-success': movie.stock > 5,'text-warning': movie.stock > 0 && movie.stock <= 5,'text-danger': movie.stock === 0}">
-                    Stock: {{ movie.stock }}
-                    <i :class="{'bi bi-check-circle-fill': movie.stock > 5,'bi bi-exclamation-triangle-fill': movie.stock > 0 && movie.stock <= 5,'bi bi-x-circle-fill': movie.stock === 0}"></i>
-                </span>
-            </p>
-            <div class="row mt-auto">
-                <button class="col btn btn-info"
-                @click="openDetailView">
-                    <i class="bi bi-eye me-2"></i>Voir
-                </button>
-                <button class="col btn btn-primary"
-                @click="openModifyForm">
-                    <i class="bi bi-pencil-square me-1"></i>Modifier
-                </button>
-                <button class="col btn btn-danger"
-                @click="deleteMovie">
-                    <i class="bi bi-trash m-2"></i>Supprimer
-                </button>
-                <button class="col btn btn-warning"
-                @click="duplicateMovie">
-                    <i class="bi bi-back m-2"></i>Dupliquer
-                </button>
-            </div>
+<div class="p-4 bg-white rounded-4 movie-card">    
+    <div class="ratio ratio-16x9 mb-4 rounded overflow-hidden ">
+        <img :src="movie.imageUrl" :alt="movie.name" class="img-fluid w-100 h-100"/>
+    </div>
+        <h3 class="fs-5 fw-semibold text-dark mb-2">
+            {{ movie.name }}
+        </h3>
+        <p class="fs-6 text-secondary mb-4">
+            Directeur : {{ movie.producer }}
+        </p>
+    <div class="d-flex justify-content-between align-items-center">
+        <span 
+            :class="{'text-success': movie.stock > 5,'text-warning': movie.stock > 0 && movie.stock <= 5,'text-danger': movie.stock === 0}">
+                Stock: {{ movie.stock }}
+            <i :class="{'bi bi-check-circle-fill': movie.stock > 5,'bi bi-exclamation-triangle-fill': movie.stock > 0 && movie.stock <= 5,'bi bi-x-circle-fill': movie.stock === 0}"></i>
+        </span>
+        <div class="btn-group me-2 gap-1">
+            <button class="col btn btn-primary rounded"
+                @click.stop="openModifyForm">
+                <i class="bi bi-pencil-square"></i>
+            </button>
+            <button class="col btn btn-danger rounded"
+                @click.stop="deleteMovie">
+                <i class="bi bi-trash"></i>
+            </button>
+            <button class="col btn btn-warning rounded"
+                @click.stop="duplicateMovie">
+                <i class="bi bi-back"></i>
+            </button>
         </div>
     </div>
+</div>
 </template>
 
 <style scoped>
+.movie-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.movie-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
 </style>

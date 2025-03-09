@@ -3,11 +3,21 @@
 
 <template>
   <header>
-    <div class="container text-center py-5 bg-primary bg-gradient rounded-3 shadow-lg">
-      <h1 class="display-1 fw-bold mb-4 text-white">FilmoBox</h1>
-    </div>
-  </header>
+      <div class="position-relative bg-dark text-white mainImage shadow-lg">
+        <img
+          src="../assets/images/backGroundImage.jpg"
+          class="w-100 h-100 opacity-25 object-fit-cover"
+          alt="Affiche de FilmoBox"
+        />
+        <div class="position-absolute top-50 start-50 translate-middle text-center">
+          <h1 class="fw-bold display-5">FilmoBox</h1>
+        </div>
+      </div>
+    </header>
 </template>
 
 <style scoped>
+.mainImage {
+  height: 200px
+}
 </style>

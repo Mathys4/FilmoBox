@@ -12,17 +12,17 @@ const selectedCategoryToFilter = (category: MovieCategory) => {
 </script>
 
 <template>
-<MovieNavBar />
-    <div class="container bg-black bg-gradient p-4 rounded shadow-lg">
-      <div class="row">
-        
-        <MovieSideBar
-        @select="selectedCategoryToFilter" />
-        <MovieInteractiveList
-        :selectedCategory />
-      </div>
-       
-  </div>
+  <div class="row">
+    <div class="col-md-2">
+      <MovieSideBar @select="selectedCategoryToFilter" />
+    </div>
+    <div class="col-md-10">
+      <main class="flex-grow-1 bg-secondary bg-opacity-10">
+        <MovieNavBar />
+        <MovieInteractiveList :selectedCategory />
+      </main>
+    </div>
+  </div> 
 </template>
 
 <style scoped>

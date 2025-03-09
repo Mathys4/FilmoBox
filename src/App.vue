@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import './css/bootstrap.min.css'
-import './js/bootstrap.bundle.min.js'
+import "bootstrap/dist/css/bootstrap.min.css"
+import "bootstrap"
 import FilmoBox from './components/FilmoBox.vue'
 </script>
 

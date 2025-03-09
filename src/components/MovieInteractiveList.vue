@@ -1,91 +1,85 @@
 <script setup lang="ts">
 import { movies } from "../scripts/baseMovies.ts";
-import { type DetailedMovie, type Movie, type MovieCategory } from "../scripts/movie.ts";
+import { type Movie, type MovieCategory, type StockFilter } from "../scripts/movie.ts";
 import  MovieCard  from "./MovieCard.vue";
 import  MovieDetailedCard  from "./MovieDetailedCard.vue";
-import { ref, watch } from 'vue';
-import MovieForm from "./MovieForm.vue";
+import { ref, watch, onMounted } from 'vue';
+import MovieUploadForm from "./MovieUploadForm.vue";
 import { MovieCategoryEnum } from "../scripts/movie.ts";
-import MovieModifyPreviewAndForm from "./MovieModifyPreviewAndForm.vue";
+import MovieModifyForm from "./MovieModifyForm.vue";
 import MovieConfirmationDelete from "./MovieConfirmationDelete.vue";
-import MovieDuplicate from "./MovieDuplicate.vue";
+import MovieDuplicateForm from "./MovieDuplicateForm.vue";
+import MovieOutStockAlert from "./MovieOutStockAlert.vue";
+import MovieStockFilter from "./MovieStockFilter.vue";
+import ExportButton from "./ExportButton.vue";
+import MovieSearch from "./MovieSearch.vue";
 
 const props = defineProps<{
     selectedCategory: MovieCategory;
 }>();
 
+onMounted(() => {
+    isAnyMovieOutOfStock();
+})
 
-const showUploadForm = ref(false);
+const isAnyMovieOutOfStock = () => {
+    outOfStockMovies.value = moviesInteractiveList.value.filter((movie) => movie.stock === 0);
+    if(outOfStockMovies.value.length !== 0) {
+        showAlertOutOfStock.value = true;
+    }
+    else {
+        showAlertOutOfStock.value = false;  
+    }
+}
+
+watch(() => props.selectedCategory, () => {
+    sortMoviesByCategory();
+})
+
+const sortMoviesByCategory = () => {
+    moviesInteractiveList.value = initialMovieList.value;
+    if(props.selectedCategory === 'Toutes') {
+        moviesInteractiveList.value = initialMovieList.value;
+    }
+    else {
+         moviesInteractiveList.value = initialMovieList.value.filter((movie) => movie.category === props.selectedCategory);
+    }
+}
+
 
 const showModifyForm = ref(false);
-
 const showDuplicateForm = ref(false);
-
 const showDetailedView = ref(false);
-
 const showDeleteConfirmationMessage = ref(false);
+const showAlertOutOfStock = ref(false);
 
-const initialMovieList = ref<(Movie & Partial<DetailedMovie>)[]>(movies);
-const moviesInteractiveList = ref<(Movie & Partial<DetailedMovie>)[]>(initialMovieList.value);
 
-const inputRecherche = ref('');
-const filterStock = ref('all');
+const initialMovieList = ref<(Movie)[]>(movies);
+const moviesInteractiveList = ref<(Movie)[]>(initialMovieList.value);
+const outOfStockMovies = ref<(Movie)[]>([]);
 
 const addNewMovie = (movie: Movie) => {
-    //Ajjoute un id au nouveau film créer automatiquement
     movie.id = initialMovieList.value.length + 1;
-    //Ajoute le nouveau film à la liste des films
     initialMovieList.value.push(movie);
-    //Cache le formulaire après que le film soit ajouté
-    showUploadForm.value = false;
+}
+
+const duplicateMovie = (movie: Movie) => {
+    movie.id = initialMovieList.value.length + 1;
+    initialMovieList.value.push(movie);
     showDuplicateForm.value = false;
-    researchInMovieList();
 }
-
 const modifyMovie = (movieToModify: Movie) => {
-    //Trouve le film à modifier avec le id
     const index = initialMovieList.value.findIndex((movie) => movie.id === movieToModify.id);
-    //Modifie le film pour les nouvelles valeurs du formulaire
     initialMovieList.value[index] = movieToModify;
-    //Cache le formulaire après que le film soit modifier
     showModifyForm.value = false;
-    researchInMovieList();
 }
 
+const deleteMovie = () => {
+    const index = initialMovieList.value.findIndex((movie) => movie.id === selectedMovieToDelete.value.id);
+    initialMovieList.value.splice(index, 1);
+    showDeleteConfirmationMessage.value = false;
+}
 const selectedMovieToModify = ref<Movie>(
-    {
-        id: 0,
-        name: "",
-        description: "",
-        category: MovieCategoryEnum.Toutes,
-        stock: 0,
-        imageUrl:""
-    }
-);
-
-const selectedMovieToDelete = ref<Movie>(
-    {
-        id: 0,
-        name: "",
-        description: "",
-        category: MovieCategoryEnum.Toutes,
-        stock: 0,
-        imageUrl:""
-    }
-);
-
-const selectedMovieToDuplicate = ref<Movie>(
-    {
-        id: 0,
-        name: "",
-        description: "",
-        category: MovieCategoryEnum.Toutes,
-        stock: 0,
-        imageUrl:""
-    }
-);
-
-const selectedMovieToViewDetail = ref<DetailedMovie>(
     {
         id : 0,
         name : "",
@@ -99,21 +93,51 @@ const selectedMovieToViewDetail = ref<DetailedMovie>(
     }
 );
 
-const movieToViewDetails = (movieToView: Movie) => {
-    showDetailedView.value = true;
+const selectedMovieToDelete = ref<Movie>(
+    {
+        id : 0,
+        name : "",
+        producer : "",
+        releaseDate : "",
+        duration : 0,
+        category : MovieCategoryEnum.Toutes,
+        description : "",
+        stock : 0,
+        imageUrl : ""
+    }
+);
 
-    // Fix the findIndex call - comparing the correct IDs
-    const index = initialMovieList.value.findIndex((m) => m.id === movieToView.id);
-        const foundMovie = initialMovieList.value[index];
-        selectedMovieToViewDetail.value.id = foundMovie.id;
-        selectedMovieToViewDetail.value.name = foundMovie.name;
-        selectedMovieToViewDetail.value.description = foundMovie.description;
-        selectedMovieToViewDetail.value.category = foundMovie.category;
-        selectedMovieToViewDetail.value.stock = foundMovie.stock;
-        selectedMovieToViewDetail.value.imageUrl = foundMovie.imageUrl;
-        selectedMovieToViewDetail.value.producer = foundMovie.producer || "";
-        selectedMovieToViewDetail.value.releaseDate = foundMovie.releaseDate || "";
-        selectedMovieToViewDetail.value.duration = foundMovie.duration || 0;
+const selectedMovieToDuplicate = ref<Movie>(
+    {
+        id : 0,
+        name : "",
+        producer : "",
+        releaseDate : "",
+        duration : 0,
+        category : MovieCategoryEnum.Toutes,
+        description : "",
+        stock : 0,
+        imageUrl : ""
+    }
+);
+
+const selectedMovieToViewDetail = ref<Movie>(
+    {
+        id : 0,
+        name : "",
+        producer : "",
+        releaseDate : "",
+        duration : 0,
+        category : MovieCategoryEnum.Toutes,
+        description : "",
+        stock : 0,
+        imageUrl : ""
+    }
+);
+
+const movieToViewDetails = (movie: Movie) => {
+    selectedMovieToViewDetail.value = movie;
+    showDetailedView.value = true;
 };
 
 const movieToModify = (movie: Movie) => {
@@ -139,140 +163,93 @@ const handleConfirm = () => {
 const handleCancel = () => {
     showDeleteConfirmationMessage.value = false
 }
-const deleteMovie = () => {
-    //Trouve le film à supprimer avec le id
-    const index = initialMovieList.value.findIndex((movie) => movie.id === selectedMovieToDelete.value.id);
-    //Supprime le film de la liste des films
-    initialMovieList.value.splice(index, 1);
-    showDeleteConfirmationMessage.value = false;
-}
 
-const researchInMovieList = () => {
+
+const researchInMovieList = (inputQuery: string) => {
     moviesInteractiveList.value = initialMovieList.value;
-    if (inputRecherche.value.trim() === '') {
+    if (inputQuery.trim() === '') {
         moviesInteractiveList.value = initialMovieList.value;
     } else {
         // Filtre les films avec le nom recherché
-        moviesInteractiveList.value = initialMovieList.value.filter((movie) => 
-            movie.name.toLowerCase().includes(inputRecherche.value.toLowerCase())
+        moviesInteractiveList.value = moviesInteractiveList.value.filter((movie) => 
+            movie.name.toLowerCase().includes(inputQuery.toLowerCase())
         );
     }
 };
-watch(
-  () => props.selectedCategory, () => { sortMoviesByCategory() }
-);
-const sortMoviesByCategory = () => {
-    moviesInteractiveList.value = initialMovieList.value;
-    if(props.selectedCategory === 'Toutes') {
-        moviesInteractiveList.value = initialMovieList.value;
-    }
-    else {
-        // Filtre les films avec la catégorie sélectionnée
-         moviesInteractiveList.value = initialMovieList.value.filter((movie) => movie.category === props.selectedCategory);
-    }
-};
 
-const researchInMovieListWithStock = () => {
+const researchInMovieListWithStock = (filter: StockFilter) => {
     moviesInteractiveList.value = initialMovieList.value;
-    if (filterStock.value === 'Tous') {
-        moviesInteractiveList.value = initialMovieList.value;
-    } else if (filterStock.value === 'Dispo') {
+    if (filter === 'Dispo') {
         // Filtre les films avec le stock disponible
         moviesInteractiveList.value = initialMovieList.value.filter((movie) => 
             movie.stock > 0
         );
-    } else if (filterStock.value === 'Aucun') {
+    }
+    if (filter === 'Aucun') {
         // Filtre les films avec le stock épuisé
         moviesInteractiveList.value = initialMovieList.value.filter((movie) => 
             movie.stock === 0
         );
     }
-};
-
-const isAnyMovieOutOfStock = () => {
-    // Filtre les films avec le stock disponible
-    moviesInteractiveList.value = initialMovieList.value.filter((movie) => movie.stock === 0);
-    if(moviesInteractiveList.value.length !== 0) {
-        alert('Ces films sont hors stocks : ' + moviesInteractiveList.value.map((movie) => movie.name).join(', '));
+    if (filter === 'Tous') {
+        moviesInteractiveList.value = initialMovieList.value;
     }
-    moviesInteractiveList.value = initialMovieList.value;
 };
 
-const setFiltreStock = (filter: 'Tous' | 'Dispo' | 'Aucun') => {
-    filterStock.value = filter;
-    researchInMovieListWithStock();
-};
-isAnyMovieOutOfStock();
-
-const exportMovies = () => {
-  // exportToCSV(moviesInteractiveList.value, 'movies.csv');
-};
 </script>
 
 <template>
-    
-    <div class="col">
-        <h4 class="mb-3">Liste des films</h4>
-        <div class="row">
-            <div class="btn-group">
-                <button  v-if="!showUploadForm" @click="showUploadForm = true" type="button" class="btn btn-primary">Ajouter un nouveau film</button>
-                <button  v-if="showUploadForm" @click="showUploadForm = false" type="button" class="btn btn-danger">Fermer le formulaire</button>
-            </div>
-            <div v-if="showUploadForm" class="col">
-                <MovieForm
-                @submit="addNewMovie" />
-            </div>
+    <div class="container mt-4">
+        <div v-if="showAlertOutOfStock">
+            <MovieOutStockAlert
+                :outOfStockMovies="outOfStockMovies"
+                @close="showAlertOutOfStock=false"/>
         </div>
-        <div class="row">
-            <div class="btn-group">
-                <button type="button" class="btn btn-secondary" @click="setFiltreStock('Tous')">Tous</button>
-                <button type="button" class="btn btn-success" @click="setFiltreStock('Dispo')">Disponibles</button>
-                <button type="button" class="btn btn-danger" @click="setFiltreStock('Aucun')">Hors Stock</button>
-                <button class="btn btn-info" @click="exportMovies"><i class="bi bi-download"></i> Export to CSV</button>
-            </div>
-            <div class="input-group mb-3">
-                <input v-model="inputRecherche" type="text" class="form-control" placeholder="Rechercher un film" aria-label="Rechercher un film">
-                <button @click="researchInMovieList" class="btn btn-outline-secondary" type="button" id="researchButton">Rechercher</button>
-            </div>
-            <div v-if="showDeleteConfirmationMessage" class="container mt-4">
-                <MovieConfirmationDelete
-                    @confirm="handleConfirm"
-                    @cancel="handleCancel" />
-            </div>
-            <div v-if="!showModifyForm && !showDeleteConfirmationMessage && !showDuplicateForm && !showDetailedView" class="container">
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    <div v-for="movie in moviesInteractiveList" :key="movie.id" class="col">
-                        <MovieCard 
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        
+        <h1 class="h1 text-dark">Liste des films</h1>
+        <MovieUploadForm @submit="addNewMovie" />
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 mb-4">
+        <MovieStockFilter @changeFilter="researchInMovieListWithStock" />
+        <ExportButton :movie-list-to-import="moviesInteractiveList" />
+      </div>
+
+      <MovieSearch @search="researchInMovieList" />
+    </div>
+        <div v-if="showDeleteConfirmationMessage" class="container mt-4">
+            <MovieConfirmationDelete
+                @confirm="handleConfirm"
+                @cancel="handleCancel" />
+        </div>
+        <div v-if=" !showDeleteConfirmationMessage" class="container">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <div v-for="movie in moviesInteractiveList" :key="movie.id" class="col" >
+                    <MovieCard 
                         :movie="movie"
                         @modify="movieToModify"
                         @delete="movieToDelete"
                         @duplicate="movieToDuplicate"
-                        @view="movieToViewDetails"
-                        />
-                    </div>
+                        @click="movieToViewDetails(movie)"/>
                 </div>
             </div>
-            <div v-if="showDetailedView" class="container py-4">
-                <MovieDetailedCard
+        </div>
+        <div v-if="showDetailedView" class="container py-4">
+            <MovieDetailedCard
                 :movie="selectedMovieToViewDetail"
-                @back="showDetailedView = false"
-                @modify="movieToModify"
-                @delete="movieToDelete"
-                @duplicate="movieToDuplicate"
-                @view="movieToViewDetails" />
-            </div>
-            <div v-if="showModifyForm" class="container py-4">
-                <MovieModifyPreviewAndForm
+                @back="showDetailedView = false" />
+        </div>
+        <div v-if="showModifyForm" class="container py-4">
+            <MovieModifyForm
                 :selectedMovie = selectedMovieToModify
                 @submit="modifyMovie" />
-            </div>
-            <div v-if="showDuplicateForm" class="container py-4">
-                <MovieDuplicate
-                :selectedMovie = selectedMovieToDuplicate
-                @submit="addNewMovie" />
-            </div>
         </div>
-    </div>
+        <div v-if="showDuplicateForm" class="container py-4">
+            <MovieDuplicateForm
+                :selectedMovie = selectedMovieToDuplicate
+                @submit="duplicateMovie" />
+        </div>
 </template>
 
 <style scoped>

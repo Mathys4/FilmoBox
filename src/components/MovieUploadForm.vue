@@ -1,0 +1,166 @@
+<script setup lang="ts">
+import { ref, defineEmits } from 'vue';
+import { MovieCategoryEnum } from "../scripts/movie.ts";
+import { type Movie  } from "../scripts/movie.ts";
+
+const showUploadForm = ref(false);
+
+const newMovie = ref<Movie>({
+    id: 0,
+    name: "",
+    producer: "",
+    releaseDate: "",
+    duration: 0,
+    category: MovieCategoryEnum.Toutes,
+    description: "",
+    stock: 0,
+    imageUrl: ""
+});
+
+const emit = defineEmits<{
+    (event: 'submit', movie: Movie): void
+}>();
+
+function verifMovie() {
+    if (newMovie.value.name === ""
+        || newMovie.value.description === ""
+        || newMovie.value.category === MovieCategoryEnum.Toutes 
+        || newMovie.value.stock === 0) {
+        return false;
+    }
+    return true;
+}
+
+const submitNewMovie = () => {
+  //Vérifie si le movie est bien valide
+    if(verifMovie() === true) {
+        //emit le nouveau film ajouté
+        emit('submit', newMovie.value);
+        //Reinitialise le formulaire pour ajouter un nouveau film
+        newMovie.value = {
+            id: 0,
+            name: "",
+            producer: "",
+            releaseDate: "",
+            duration: 0,
+            category: MovieCategoryEnum.Toutes,
+            description: "",
+            stock: 0,
+            imageUrl: ""
+        };
+        showUploadForm.value = false;
+    }
+    else 
+    {
+        alert("Veuillez remplir tous les champs. Le film est invalide à l'ajout.");
+    }
+};
+</script>
+
+<template>
+    <div>
+        <button @click="showUploadForm = true" class="btn btn-primary">
+            <i class="bi bi-plus-square m-2"></i>Ajouter un nouveau film
+        </button>
+
+        <div v-if="showUploadForm">
+        <!--Ajoute un fond transaparent-->
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Ajouter un nouveau film</h5>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-group mb-3">
+                                    <label for="movieName" class="form-label">Titre</label>
+                                    <input 
+                                        v-model="newMovie.name" 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="movieName" />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="movieProducer" class="form-label">Directeur</label>
+                                    <input 
+                                        v-model="newMovie.producer" 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="movieProducer" />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="movieReleaseDate" class="form-label">Date de sortie</label>
+                                    <input 
+                                        v-model="newMovie.releaseDate" 
+                                        type="date" 
+                                        class="form-control" 
+                                        id="movieReleaseDate" />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="movieDuration" class="form-label">Durée (minutes)</label>
+                                    <input 
+                                        v-model.number="newMovie.duration" 
+                                        type="number" 
+                                        class="form-control" 
+                                        id="movieDuration" />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="movieCategory" class="form-label">Catégorie</label>
+                                    <select class="form-select" id="movieCategory" v-model="newMovie.category" >
+                                        <option value="" disabled>Sélectionnez une catégorie</option>
+                                        <option v-for="category in MovieCategoryEnum" 
+                                            :key="category" 
+                                            :value="category">
+                                            {{ category }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="movieStock" class="form-label">Stock</label>
+                                    <input 
+                                        v-model.number="newMovie.stock" 
+                                        type="number" 
+                                        class="form-control" 
+                                        id="movieStock" />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="movieImageUrl" class="form-label">URL de l'image</label>
+                                    <input 
+                                        v-model="newMovie.imageUrl" 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="movieImageUrl"  />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="movieDescription" class="form-label">Description</label>
+                                    <textarea 
+                                        v-model="newMovie.description" 
+                                        class="form-control" 
+                                        id="movieDescription" 
+                                        rows="3" >
+                                    </textarea>
+                                </div>
+                                <div class="d-flex justify-content-end gap-4">
+                                    <button type="button" @click="showUploadForm = false" class="btn btn-secondary">
+                                         Annuler
+                                    </button>
+                                    <button @click="submitNewMovie"type="submit" class="btn btn-success">
+                                        Ajouter à la liste
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>  
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.modal-open {
+  overflow: hidden;
+}
+</style>

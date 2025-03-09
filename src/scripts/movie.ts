@@ -1,15 +1,6 @@
 export interface Movie {
     id : number
     name : string
-    category : MovieCategory
-    description : string
-    stock : number,
-    imageUrl : string
-}
-
-export interface DetailedMovie {
-    id : number
-    name : string
     producer : string
     releaseDate : string
     duration : number
@@ -20,6 +11,7 @@ export interface DetailedMovie {
 }
 
 export type MovieCategory = 'Toutes' | 'Horreur' | 'Action' | 'Comédie' | 'Science-fiction' | 'Drame' | 'Thriller' | 'Romance';
+export type StockFilter = 'Tous' | 'Dispo' | 'Aucun';
 
 export enum MovieCategoryEnum {
     Toutes = 'Toutes',

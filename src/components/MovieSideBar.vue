@@ -17,18 +17,22 @@ emit('select', category);
 </script>
 
 <template>
-    <div class="col-md-3">
-      <h4 class="mb-3">Catégories de films</h4>
-      <ul class="list-group">
-        <li v-for="category in movieCategories"
-         :key="category"
-         class="list-group-item"
-         :class="{ active: category === selectedCategory }"
-         @click="handleSelect(category)">
-            {{ category }}
-        </li>
-      </ul>
-    </div>
+    <aside class="col-md-2 bg-white shadow-lg position-fixed h-100">
+      <div class="p-3 border-bottom">
+        <h4 class="fw-semibold text-dark">Catégories de films</h4>
+      </div>
+        <nav class="p-3">
+          <ul class="list-unstyled">
+            <li v-for="category in movieCategories"
+              :key="category"
+              @click="handleSelect(category)"
+              :class="{'bg-primary-subtle text-primary': category === selectedCategory, 'text-dark': category !== selectedCategory}"
+              class="d-flex align-items-center p-2 rounded">
+              <span>{{ category }}</span>
+            </li>
+        </ul>
+      </nav>
+    </aside>
 </template>
 
 <style scoped>
